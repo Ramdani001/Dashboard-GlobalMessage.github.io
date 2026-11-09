@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Massage - CMS Admin Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF007A',
+                            pinkDark: '#D6006B',
+                            pinkGlow: '#FF3399',
+                            darkBg: '#0B0B0E',
+                            cardBg: '#141419',
+                            cardBgHeader: '#1C1C24',
+                            borderDark: '#282834'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0B0E;
+            color: #E2E8F0;
+            overflow-x: hidden;
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(255, 0, 122, 0.35);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(255, 0, 122, 0.6);
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 0, 122, 0.15);
+        }
+
+        .glass-panel-hover:hover {
+            border-color: rgba(255, 0, 122, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 122, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0B0E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF007A;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="w-64 bg-brand-cardBg border-r border-brand-borderDark flex flex-col justify-between transition-all duration-300 z-40 fixed md:relative h-full -translate-x-full md:translate-x-0">
+        <div>
+            <!-- Sidebar Header / Logo -->
+            <div class="h-20 flex items-center px-6 border-b border-brand-borderDark justify-between">
+                <a href="#" class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-pink to-purple-600 flex items-center justify-center font-serif text-white font-bold text-sm shadow-lg shadow-brand-pink/30">
+                        GM
+                    </div>
+                    <div>
+                        <span class="font-serif font-bold text-lg text-white tracking-wide">GLOBAL</span>
+                        <span class="font-serif font-bold text-lg text-brand-pink neon-text">CMS</span>
+                    </div>
+                </a>
+                <button id="closeSidebarBtn" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1 text-sm font-medium">
+                <a href="#" onclick="switchTab('overview')" id="nav-overview" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-pink text-white font-semibold transition-all">
+                    <i class="fa-solid fa-chart-pie text-lg"></i>
+                    <span>Overview & Stats</span>
+                </a>
+                <a href="#" onclick="switchTab('services')" id="nav-services" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-brand-cardBgHeader transition-all">
+                    <i class="fa-solid fa-spa text-lg"></i>
+                    <span>Kelola Layanan</span>
+                </a>
+                <a href="#" onclick="switchTab('orders')" id="nav-orders" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-brand-cardBgHeader transition-all relative">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                    <span>Log Pesanan</span>
+                    <span id="orderBadgeCount" class="ml-auto bg-brand-pink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">5</span>
+                </a>
+                <a href="#" onclick="switchTab('settings')" id="nav-settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-brand-cardBgHeader transition-all">
+                    <i class="fa-solid fa-sliders text-lg"></i>
+                    <span>Pengaturan CMS</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer Admin User -->
+        <div class="p-4 border-t border-brand-borderDark">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-brand-cardBgHeader border border-brand-borderDark">
+                <div class="w-10 h-10 rounded-full bg-brand-pink/20 border border-brand-pink/50 flex items-center justify-center text-brand-pink font-bold">
+                    AD
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-semibold text-white truncate">Administrator</p>
+                    <p class="text-[11px] text-gray-400 truncate">Super Admin</p>
+                </div>
+                <button class="ml-auto text-gray-400 hover:text-red-400 transition-colors" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- Top Navigation Header -->
+        <header class="h-20 bg-brand-cardBg/90 border-b border-brand-borderDark px-4 sm:px-8 flex items-center justify-between z-30">
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn" class="md:hidden text-gray-300 hover:text-brand-pink text-xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 id="pageTitle" class="font-serif text-xl sm:text-2xl font-bold text-white tracking-wide">Overview & Statistics</h1>
+            </div>
+
+            <!-- Top Actions -->
+            <div class="flex items-center gap-4">
+                <button onclick="openAddModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-pink to-brand-pinkDark text-white font-semibold text-xs sm:text-sm shadow-md shadow-brand-pink/30 hover:brightness-110 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">Tambah Layanan Baru</span>
+                </button>
+                
+                <a href="index.html" target="_blank" class="p-2.5 rounded-xl bg-brand-cardBgHeader border border-brand-borderDark text-gray-300 hover:text-brand-pink hover:border-brand-pink/40 transition-all" title="Pratinjau Website Utama">
+                    <i class="fa-solid fa-globe text-base"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
+
+            <!-- TAB 1: OVERVIEW & STATS -->
+            <div id="tab-overview" class="tab-content space-y-8">
+                <!-- Stat Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Est. Pendapatan</p>
+                                <h3 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">Rp 28.400.000</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-emerald-400 mt-4 flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-arrow-trend-up"></i> +14.2% minggu ini
+                        </p>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Pesanan</p>
+                                <h3 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1" id="statOrderCount">18 Orders</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-brand-pink/10 border border-brand-pink/30 text-brand-pink flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-4">Terhitung bulan ini</p>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Layanan Aktif</p>
+                                <h3 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1" id="statServiceCount">11 Items</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-purple-400 mt-4">Katalog utama & Long time</p>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">WhatsApp Contact</p>
+                                <h3 class="text-lg font-bold text-white mt-2 truncate">+62 812-3456-7890</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 flex items-center justify-center text-xl">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-400 mt-4 flex items-center gap-1">
+                            <i class="fa-solid fa-circle text-[8px] animate-pulse"></i> Ready Gateway
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Recent Orders Section -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="font-serif text-xl font-bold text-white">Pesanan Masuk Terbaru</h2>
+                            <p class="text-xs text-gray-400">Log pemesanan langsung dari form WhatsApp frontend</p>
+                        </div>
+                        <button onclick="switchTab('orders')" class="text-xs font-semibold text-brand-pink hover:underline">Lihat Semua Log</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-brand-cardBgHeader text-gray-400 uppercase text-[11px] font-semibold border-b border-brand-borderDark">
+                                <tr>
+                                    <th class="py-3.5 px-4">Order ID</th>
+                                    <th class="py-3.5 px-4">Nama Pelanggan</th>
+                                    <th class="py-3.5 px-4">Paket Dipilih</th>
+                                    <th class="py-3.5 px-4">Add-ons</th>
+                                    <th class="py-3.5 px-4">Lokasi/Hotel</th>
+                                    <th class="py-3.5 px-4">Total Biaya</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overviewOrderTable" class="divide-y divide-brand-borderDark/60 text-gray-300">
+                                <!-- Generated Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SERVICES MANAGEMENT -->
+            <div id="tab-services" class="tab-content space-y-6 hidden">
+                
+                <!-- Filter & Search Bar -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl">
+                    <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                        <button onclick="filterCategory('all')" class="cat-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-pink text-white">Semua</button>
+                        <button onclick="filterCategory('Standard')" class="cat-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-cardBgHeader text-gray-400 hover:text-white">Standard Services</button>
+                        <button onclick="filterCategory('Long Time')" class="cat-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-cardBgHeader text-gray-400 hover:text-white">Long Time</button>
+                        <button onclick="filterCategory('Add-on')" class="cat-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-cardBgHeader text-gray-400 hover:text-white">Add-Ons</button>
+                    </div>
+
+                    <div class="w-full sm:w-72 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input type="text" id="serviceSearch" oninput="renderServicesTable()" placeholder="Cari nama layanan..." class="w-full pl-9 pr-4 py-2 bg-brand-darkBg border border-brand-borderDark rounded-xl text-sm text-white focus:outline-none focus:border-brand-pink">
+                    </div>
+                </div>
+
+                <!-- Services Table -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-brand-cardBgHeader text-gray-400 uppercase text-[11px] font-semibold border-b border-brand-borderDark">
+                                <tr>
+                                    <th class="py-3.5 px-4">Nama Layanan</th>
+                                    <th class="py-3.5 px-4">Kategori</th>
+                                    <th class="py-3.5 px-4">Durasi</th>
+                                    <th class="py-3.5 px-4">Harga (IDR)</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3.5 px-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servicesTableBody" class="divide-y divide-brand-borderDark/60 text-gray-300">
+                                <!-- Dynamic Service Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB 3: ORDER LOGS -->
+            <div id="tab-orders" class="tab-content space-y-6 hidden">
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 class="font-serif text-xl font-bold text-white">Log Riwayat Pemesanan</h2>
+                            <p class="text-xs text-gray-400">Daftar transaksi masukan pelanggan untuk arsip admin</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="orderSearchInput" oninput="renderOrdersTable()" placeholder="Cari nama / WA..." class="px-4 py-2 bg-brand-darkBg border border-brand-borderDark rounded-xl text-xs text-white focus:outline-none focus:border-brand-pink">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-brand-cardBgHeader text-gray-400 uppercase text-[11px] font-semibold border-b border-brand-borderDark">
+                                <tr>
+                                    <th class="py-3.5 px-4">Order ID</th>
+                                    <th class="py-3.5 px-4">Nama Pelanggan</th>
+                                    <th class="py-3.5 px-4">No. WhatsApp</th>
+                                    <th class="py-3.5 px-4">Detail Paket</th>
+                                    <th class="py-3.5 px-4">Lokasi</th>
+                                    <th class="py-3.5 px-4">Total Tagihan</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3.5 px-4 text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersFullTable" class="divide-y divide-brand-borderDark/60 text-gray-300">
+                                <!-- Dynamic Orders Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SITE SETTINGS -->
+            <div id="tab-settings" class="tab-content space-y-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <div class="lg:col-span-2 glass-panel rounded-2xl p-6 space-y-6">
+                        <h2 class="font-serif text-xl font-bold text-white border-b border-brand-borderDark pb-4">Pengaturan Global Website</h2>
+                        
+                        <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase mb-2">Nama Perusahaan / Brand</label>
+                                <input type="text" id="settingSiteName" value="Global Massage" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase mb-2">Nomor WhatsApp Admin (Format 62...)</label>
+                                <input type="text" id="settingWANumber" value="6281234567890" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 uppercase mb-2">Tagline Website (Hero Section)</label>
+                                <input type="text" id="settingTagline" value="Exclusive Luxury Outcall Service Specialist" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink text-sm">
+                            </div>
+
+                            <div class="pt-4 border-t border-brand-borderDark flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-semibold text-white">Mode Pemeliharaan (Maintenance)</h4>
+                                    <p class="text-xs text-gray-400">Tutup sementara halaman utama untuk pemeliharaan</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settingMaintenance" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-brand-borderDark peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-pink"></div>
+                                </label>
+                            </div>
+
+                            <div class="pt-6">
+                                <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-pink to-brand-pinkDark text-white font-bold text-sm shadow-lg shadow-brand-pink/30 hover:brightness-110 transition-all">
+                                    Simpan Perubahan Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Theme Preview & System Info -->
+                    <div class="space-y-6">
+                        <div class="glass-panel rounded-2xl p-6 space-y-4">
+                            <h3 class="font-serif text-lg font-bold text-white">Tema Visual Active</h3>
+                            <div class="p-4 rounded-xl bg-brand-darkBg border border-brand-borderDark space-y-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Primary Accent:</span>
+                                    <span class="flex items-center gap-2 text-white font-bold">
+                                        <span class="w-3 h-3 rounded-full bg-brand-pink neon-glow"></span> #FF007A
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Background:</span>
+                                    <span class="text-white font-bold">Obsidian Dark (#0B0B0E)</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Style Concept:</span>
+                                    <span class="text-brand-pink font-bold">Glassmorphism Glow</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6">
+                            <h3 class="font-serif text-lg font-bold text-white mb-2">Versi Sistem CMS</h3>
+                            <p class="text-xs text-gray-400">Engine Build: v2.4.0 - Node/MySQL Ready ERD Schema</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL: ADD / EDIT SERVICE -->
+    <div id="serviceModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl w-full max-w-md p-6 border border-brand-pink/40 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b border-brand-borderDark pb-4 mb-4">
+                <h3 id="modalTitle" class="font-serif text-xl font-bold text-white">Tambah Layanan Baru</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="serviceForm" onsubmit="saveServiceForm(event)" class="space-y-4">
+                <input type="hidden" id="modalServiceId">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Nama Layanan</label>
+                    <input type="text" id="modalName" required placeholder="Contoh: Red Golden Special" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-pink">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Kategori</label>
+                        <select id="modalCategory" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-brand-pink">
+                            <option value="Standard">Standard</option>
+                            <option value="Long Time">Long Time</option>
+                            <option value="Add-on">Add-on</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Durasi</label>
+                        <input type="text" id="modalDuration" required placeholder="60 Menit / 3 Jam" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-pink">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Harga (Nominal Rp)</label>
+                    <input type="number" id="modalPrice" required placeholder="750000" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-pink">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Status Publikasi</label>
+                    <select id="modalStatus" class="w-full bg-brand-darkBg border border-brand-borderDark rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-brand-pink">
+                        <option value="Active">Aktif (Tampil)</option>
+                        <option value="Inactive">Nonaktif (Sembunyi)</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-brand-borderDark">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-pink text-white font-semibold text-xs hover:brightness-110 shadow-lg shadow-brand-pink/30">
+                        Simpan Layanan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Data Logic & UI Handling -->
+    <script>
+        // Initial Services Data Store (Derived from user ERD/requirements)
+        let servicesData = [
+            { id: 1, name: "White Golden", category: "Standard", duration: "60 Menit", price: 750000, status: "Active" },
+            { id: 2, name: "Black Golden", category: "Standard", duration: "60 Menit", price: 1000000, status: "Active" },
+            { id: 3, name: "Red Golden", category: "Standard", duration: "60 Menit", price: 1300000, status: "Active" },
+            { id: 4, name: "Red Golden (Extended)", category: "Standard", duration: "90 Menit", price: 1600000, status: "Active" },
+            { id: 5, name: "Golden Diamond 4 Hand", category: "Standard", duration: "90 Menit", price: 3000000, status: "Active" },
+            { id: 6, name: "Spouse 1", category: "Standard", duration: "90 Menit", price: 2300000, status: "Active" },
+            { id: 7, name: "Spouse 2", category: "Standard", duration: "90 Menit", price: 3000000, status: "Active" },
+            { id: 8, name: "Body to Body", category: "Add-on", duration: "Ekstra", price: 300000, status: "Active" },
+            { id: 9, name: "Extra Time 30 Min", category: "Add-on", duration: "30 Menit", price: 300000, status: "Active" },
+            { id: 10, name: "Long Time 3 Hours", category: "Long Time", duration: "3 Jam", price: 3500000, status: "Active" },
+            { id: 11, name: "Long Time 5 Hours", category: "Long Time", duration: "5 Jam", price: 6000000, status: "Active" },
+            { id: 12, name: "Long Time 8 Hours", category: "Long Time", duration: "8 Jam", price: 8500000, status: "Active" },
+            { id: 13, name: "Long Time 12 Hours", category: "Long Time", duration: "12 Jam", price: 13500000, status: "Active" }
+        ];
+
+        // Initial Orders Mock Data
+        let ordersData = [
+            { id: "GM-9021", customer: "Pak Alex", phone: "62812987611", package: "Golden Diamond 4 Hand", addon: "Body to Body", location: "Hotel Ritz Room 402", total: 3300000, status: "Confirmed" },
+            { id: "GM-9022", customer: "Ibu Dian", phone: "62817765432", package: "Spouse 1", addon: "Tanpa Add-on", location: "Apartemen Senopati B-12", total: 2300000, status: "Completed" },
+            { id: "GM-9023", customer: "Mr. John", phone: "62813112233", package: "Red Golden (90 Min)", addon: "Extra Time 30 Min", location: "Grand Hyatt Room 1105", total: 1900000, status: "Pending" },
+            { id: "GM-9024", customer: "Pak Budi", phone: "62856443322", package: "Long Time 5 Hours", addon: "Body to Body", location: "Hotel Mulia Room 809", total: 6300000, status: "Confirmed" },
+            { id: "GM-9025", customer: "David", phone: "62878909080", package: "Black Golden", addon: "Tanpa Add-on", location: "Kediaman Pondok Indah", total: 1000000, status: "Cancelled" }
+        ];
+
+        let selectedCategoryFilter = "all";
+
+        // Navigation Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-brand-pink', 'text-white');
+                el.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.classList.add('bg-brand-pink', 'text-white');
+            activeNav.classList.remove('text-gray-400');
+
+            // Titles
+            const titles = {
+                'overview': 'Overview & Statistics',
+                'services': 'Manajemen Katalog Layanan',
+                'orders': 'Log & Riwayat Pemesanan',
+                'settings': 'Pengaturan Sistem CMS'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId];
+
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            }
+        }
+
+        // Format Currency Utility
+        function formatIDR(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+        }
+
+        // Render Overview Order Table
+        function renderOverviewOrders() {
+            const tbody = document.getElementById('overviewOrderTable');
+            tbody.innerHTML = '';
+            ordersData.slice(0, 4).forEach(ord => {
+                const badgeStyle = {
+                    'Confirmed': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                    'Completed': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                    'Pending': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+                    'Cancelled': 'bg-red-500/20 text-red-400 border-red-500/30'
+                }[ord.status];
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-brand-cardBgHeader/50">
+                        <td class="py-3 px-4 font-mono text-xs font-bold text-brand-pink">${ord.id}</td>
+                        <td class="py-3 px-4 font-semibold text-white">${ord.customer}</td>
+                        <td class="py-3 px-4">${ord.package}</td>
+                        <td class="py-3 px-4 text-xs text-gray-400">${ord.addon}</td>
+                        <td class="py-3 px-4 text-xs">${ord.location}</td>
+                        <td class="py-3 px-4 font-bold text-white">${formatIDR(ord.total)}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeStyle}">${ord.status}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Filter Services Category
+        function filterCategory(cat) {
+            selectedCategoryFilter = cat;
+            document.querySelectorAll('.cat-filter').forEach(btn => {
+                btn.classList.remove('bg-brand-pink', 'text-white');
+                btn.classList.add('bg-brand-cardBgHeader', 'text-gray-400');
+            });
+            event.target.classList.add('bg-brand-pink', 'text-white');
+            renderServicesTable();
+        }
+
+        // Render Services Table
+        function renderServicesTable() {
+            const tbody = document.getElementById('servicesTableBody');
+            const search = document.getElementById('serviceSearch').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = servicesData.filter(item => {
+                const matchCat = (selectedCategoryFilter === 'all') || (item.category === selectedCategoryFilter);
+                const matchSearch = item.name.toLowerCase().includes(search);
+                return matchCat && matchSearch;
+            });
+
+            filtered.forEach(srv => {
+                const statusBadge = srv.status === 'Active' 
+                    ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] bg-green-500/20 text-green-400 border border-green-500/30">Aktif</span>'
+                    : '<span class="px-2.5 py-0.5 rounded-full text-[10px] bg-gray-500/20 text-gray-400 border border-gray-500/30">Nonaktif</span>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-brand-cardBgHeader/50">
+                        <td class="py-3 px-4 font-semibold text-white">${srv.name}</td>
+                        <td class="py-3 px-4 text-xs text-gray-400">${srv.category}</td>
+                        <td class="py-3 px-4 text-xs"><i class="fa-regular fa-clock mr-1 text-brand-pink"></i>${srv.duration}</td>
+                        <td class="py-3 px-4 font-bold text-white">${formatIDR(srv.price)}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-center space-x-2">
+                            <button onclick="editService(${srv.id})" class="p-1.5 rounded-lg bg-brand-cardBgHeader text-gray-300 hover:text-brand-pink" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteService(${srv.id})" class="p-1.5 rounded-lg bg-brand-cardBgHeader text-gray-300 hover:text-red-400" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('statServiceCount').innerText = `${servicesData.length} Items`;
+        }
+
+        // Render Full Orders Log Table
+        function renderOrdersTable() {
+            const tbody = document.getElementById('ordersFullTable');
+            const search = document.getElementById('orderSearchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = ordersData.filter(o => 
+                o.customer.toLowerCase().includes(search) || o.phone.includes(search) || o.id.toLowerCase().includes(search)
+            );
+
+            filtered.forEach(ord => {
+                const badgeStyle = {
+                    'Confirmed': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                    'Completed': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                    'Pending': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+                    'Cancelled': 'bg-red-500/20 text-red-400 border-red-500/30'
+                }[ord.status];
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-brand-cardBgHeader/50">
+                        <td class="py-3 px-4 font-mono text-xs font-bold text-brand-pink">${ord.id}</td>
+                        <td class="py-3 px-4 font-semibold text-white">${ord.customer}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-gray-400">+${ord.phone}</td>
+                        <td class="py-3 px-4 text-xs">${ord.package} <span class="text-brand-pink">(${ord.addon})</span></td>
+                        <td class="py-3 px-4 text-xs">${ord.location}</td>
+                        <td class="py-3 px-4 font-bold text-white">${formatIDR(ord.total)}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeStyle}">${ord.status}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <a href="https://wa.me/${ord.phone}" target="_blank" class="px-3 py-1 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500 hover:text-white text-xs font-semibold transition-all">
+                                <i class="fa-brands fa-whatsapp mr-1"></i> Chat WA
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('statOrderCount').innerText = `${ordersData.length} Orders`;
+            document.getElementById('orderBadgeCount').innerText = ordersData.length;
+        }
+
+        // Modal Handlers
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = "Tambah Layanan Baru";
+            document.getElementById('modalServiceId').value = "";
+            document.getElementById('serviceForm').reset();
+            document.getElementById('serviceModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('serviceModal').classList.add('hidden');
+        }
+
+        function editService(id) {
+            const item = servicesData.find(s => s.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerText = "Edit Layanan";
+            document.getElementById('modalServiceId').value = item.id;
+            document.getElementById('modalName').value = item.name;
+            document.getElementById('modalCategory').value = item.category;
+            document.getElementById('modalDuration').value = item.duration;
+            document.getElementById('modalPrice').value = item.price;
+            document.getElementById('modalStatus').value = item.status;
+
+            document.getElementById('serviceModal').classList.remove('hidden');
+        }
+
+        function deleteService(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus layanan ini dari katalog?")) {
+                servicesData = servicesData.filter(s => s.id !== id);
+                renderServicesTable();
+            }
+        }
+
+        function saveServiceForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('modalServiceId').value;
+            const name = document.getElementById('modalName').value;
+            const category = document.getElementById('modalCategory').value;
+            const duration = document.getElementById('modalDuration').value;
+            const price = parseInt(document.getElementById('modalPrice').value);
+            const status = document.getElementById('modalStatus').value;
+
+            if (id) {
+                // Update
+                const index = servicesData.findIndex(s => s.id == id);
+                if (index !== -1) {
+                    servicesData[index] = { id: parseInt(id), name, category, duration, price, status };
+                }
+            } else {
+                // Create
+                const newId = servicesData.length ? Math.max(...servicesData.map(s => s.id)) + 1 : 1;
+                servicesData.push({ id: newId, name, category, duration, price, status });
+            }
+
+            closeModal();
+            renderServicesTable();
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            alert("Pengaturan CMS berhasil diperbarui!");
+        }
+
+        // Mobile Sidebar Toggle
+        document.getElementById('openSidebarBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+        });
+        document.getElementById('closeSidebarBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        });
+
+        // Initialize App UI
+        window.onload = function() {
+            renderOverviewOrders();
+            renderServicesTable();
+            renderOrdersTable();
+        };
+    </script>
+</body>
+</html>
